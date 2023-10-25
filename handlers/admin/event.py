@@ -1,22 +1,25 @@
 from typing import Any
 
 from aiogram import types, Bot
-from aiogram.methods import AnswerCallbackQuery
+from aiogram.fsm.context import FSMContext
 
-from data.cb_data import EventChooseCbFactory
+from data.cb_data import EventCbFactory, ButtonCbFactory, ButtonInfo
 
 
-async def approve(query: types.CallbackQuery, bot: Bot) -> Any:
+async def approve(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> Any:
+    await state.clear()
     await query.message.delete_reply_markup(query.inline_message_id)
-    data = EventChooseCbFactory.unpack(query.data)
+
+    data = EventCbFactory.unpack(query.data)
+    button = ButtonCbFactory.unpack(data.button)
     msg = ""
-    if data.is_yes:
+    if button.button == ButtonInfo.YES:
         msg = "Добавление баллов!"
         # TODO: добавление баллов в SQL
     else:
         msg = "С пруфами что-то не так.. Отпиши @rekreker"
     await bot.send_message(data.user_id, msg, reply_to_message_id=data.reply_msg_id)
-    return await bot(AnswerCallbackQuery(callback_query_id=query.id))
+    return await bot.answer_callback_query(callback_query_id=query.id)
 
 
 async def add_event(msg: types.Message) -> Any:

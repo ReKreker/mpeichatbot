@@ -1,5 +1,22 @@
+from enum import IntEnum
+
 from aiogram.filters.callback_data import CallbackData
 
+
+class ButtonInfo(IntEnum):
+    NONE = 0
+    NO = 1
+    YES = 2
+    NEXT = 3
+    PREV = 4
+
+
+class ButtonCbFactory(CallbackData, sep=";", prefix="kb_button"):
+    id: int = -1
+    button: ButtonInfo = ButtonInfo.NONE
+
+
+# Events & tasks implementation
 
 class NeponCbFactory(CallbackData, prefix="kb_nepon"):
     user_id: int
@@ -9,28 +26,16 @@ class NeponCbFactory(CallbackData, prefix="kb_nepon"):
 class QuizCbFactory(CallbackData, prefix="kb_quiz"):
     user_id: int
     reply_msg_id: int
-    is_yes: bool
+    button: str  # packed ButtonCbFactory
 
 
-class PractListCbFactory(CallbackData, prefix="kb_prac_list"):
+class PractCbFactory(CallbackData, prefix="kb_prac"):
     user_id: int
     reply_msg_id: int
-    name: str
+    button: str  # packed ButtonCbFactory
 
 
-class PractChooseCbFactory(CallbackData, prefix="kb_prac_choose"):
+class EventCbFactory(CallbackData, prefix="kb_event"):
     user_id: int
     reply_msg_id: int
-    is_yes: bool
-
-
-class EventListCbFactory(CallbackData, prefix="kb_prac_list"):
-    user_id: int
-    reply_msg_id: int
-    name: str
-
-
-class EventChooseCbFactory(CallbackData, prefix="kb_prac_choose"):
-    user_id: int
-    reply_msg_id: int
-    is_yes: bool
+    button: str  # packed ButtonCbFactory

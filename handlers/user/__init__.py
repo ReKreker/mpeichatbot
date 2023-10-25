@@ -1,49 +1,93 @@
 from aiogram import Router
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import CommandStart, Command, and_f, StateFilter
 
-import states
-from data import cb_data
-from filters import ChatTypeFilter, PracticeFilesFilter
-from . import start, nepon, quiz, practice
+from filters import ChatTypeFilter, ContentFilter
+from states.user import Activity
+from . import start, event, nepon, quiz, practice
 
 
 def prepare_router() -> Router:
     router = Router()
-    # >
-    chats_route = Router()
-    chats_route.message.filter(ChatTypeFilter("private"))
-    # >>
+    router.message.filter(ChatTypeFilter("private"))
+    # start command handler
     start_route = Router()
     start_route.message.register(start.start, CommandStart())
-    chats_route.include_router(start_route)
-    # >>
+    router.include_router(start_route)
+    # help command handler
     help_route = Router()
     help_route.message.register(start.help_msg, Command("help"))
-    chats_route.include_router(help_route)
-    # >>
+    router.include_router(help_route)
+    # Nepon
     nepon_route = Router()
-    nepon_route.message.register(nepon.call, Command("nepon"))
-    chats_route.include_router(nepon_route)
-    # >>
+    nepon_route.message.register(nepon.gen_menu, Command("nepon"))
+    router.include_router(nepon_route)
+    # Quizwinner
     quiz_route = Router()
-    quiz_route.message.register(quiz.call, Command("quizwinner"))
-    chats_route.include_router(quiz_route)
-    # >>
-    pract_list_route = Router()
-    pract_list_route.message.register(practice.get_pract_name, Command("practice"))
-    chats_route.include_router(pract_list_route)
-    # >>
+    quiz_route.message.register(quiz.gen_menu, Command("quizwinner"))
+    router.include_router(quiz_route)
+
+    # Practice
     pract_route = Router()
-    pract_route.callback_query.filter(cb_data.PractListCbFactory.filter())
-    pract_route.callback_query.register(practice.send_info)
-    chats_route.include_router(pract_route)
-    # >>
-    pract_forward_route = Router()
-    pract_forward_route.message.filter(states.user.Event.to_upload)
-    pract_forward_route.message.filter(PracticeFilesFilter())
-    pract_forward_route.message.register(practice.forward)
-    chats_route.include_router(pract_forward_route)
-    # >
-    router.include_router(chats_route)
+    pract_route.message.register(practice.gen_menu, Command("practice"))
+    router.include_router(pract_route)
+    # Require practice's proofs
+    pract_req_route = Router()
+    pract_req_route.callback_query.filter(Activity.generated)
+    pract_req_route.callback_query.register(practice.require_proofs)
+    router.include_router(pract_req_route)
+    # Get practice's proofs
+    pract_proof_route = Router()
+    pract_proof_route.message.filter(and_f(
+        StateFilter(Activity.getting_proofs),
+        ContentFilter()
+    ))
+    pract_proof_route.message.register(practice.proof_handler)
+    router.include_router(pract_proof_route)
+    # Get next proof
+    # TODO: сделать нормальное окончание для сообщений
+    practice_nproof_route = Router()
+    practice_nproof_route.message.filter(and_f(
+        StateFilter(Activity.next_proof),
+        ContentFilter()
+    ))
+    practice_nproof_route.message.register(practice.next_proof_handler)
+    router.include_router(practice_nproof_route)
+    # Forward proofs
+    practice_forward_route = Router()
+    practice_forward_route.message.filter(StateFilter(Activity.next_proof))
+    practice_forward_route.message.register(practice.forward)
+    router.include_router(practice_forward_route)
+
+    # Event
+    event_route = Router()
+    event_route.message.register(event.gen_menu, Command("event"))
+    router.include_router(event_route)
+    # Require event's proofs
+    event_req_route = Router()
+    event_req_route.callback_query.filter(Activity.generated)
+    event_req_route.callback_query.register(event.require_proofs)
+    router.include_router(event_req_route)
+    # Get event's proofs
+    event_proof_route = Router()
+    event_proof_route.message.filter(and_f(
+        StateFilter(Activity.getting_proofs),
+        ContentFilter()
+    ))
+    event_proof_route.message.register(event.proof_handler)
+    router.include_router(event_proof_route)
+    # Get next proof
+    # TODO: сделать нормальное окончание для сообщений
+    event_nproof_route = Router()
+    event_nproof_route.message.filter(and_f(
+        StateFilter(Activity.next_proof),
+        ContentFilter()
+    ))
+    event_nproof_route.message.register(event.next_proof_handler)
+    router.include_router(event_nproof_route)
+    # Forward proofs
+    event_forward_route = Router()
+    event_forward_route.message.filter(StateFilter(Activity.next_proof))
+    event_forward_route.message.register(event.forward)
+    router.include_router(event_forward_route)
 
     return router

@@ -2,24 +2,24 @@ from typing import Any
 
 from aiogram import types, Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.methods import AnswerCallbackQuery
 
-from data.cb_data import PractChooseCbFactory
+from data.cb_data import PractCbFactory, ButtonCbFactory, ButtonInfo
 
 
 async def approve(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> Any:
     await state.clear()
     await query.message.delete_reply_markup(query.inline_message_id)
 
-    data = PractChooseCbFactory.unpack(query.data)
+    data = PractCbFactory.unpack(query.data)
+    button = ButtonCbFactory.unpack(data.button)
     msg = ""
-    if data.is_yes:
+    if button.button == ButtonInfo.YES:
         msg = "Добавление баллов!"
         # TODO: добавление баллов в SQL
     else:
         msg = "С практикой что-то не так.. Отпиши @rekreker"
     await bot.send_message(data.user_id, msg, reply_to_message_id=data.reply_msg_id)
-    return await bot(AnswerCallbackQuery(callback_query_id=query.id))
+    return await bot.answer_callback_query(callback_query_id=query.id)
 
 
 async def add_practice(msg: types.Message) -> Any:
