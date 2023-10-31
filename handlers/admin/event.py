@@ -1,26 +1,28 @@
 from typing import Any
 
 from aiogram import types, Bot
-from aiogram.methods import AnswerCallbackQuery
+from aiogram.fsm.context import FSMContext
 
-from data.cb_data import EventChooseCbFactory
-from data.database import Database
+from data.cb_data import EventCbFactory, ButtonCbFactory, ButtonInfo
 
 
-async def approve(query: types.CallbackQuery, bot: Bot, db: Database) -> Any:
+async def approve(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> Any:
+    await state.clear()
     await query.message.delete_reply_markup(query.inline_message_id)
-    data = EventChooseCbFactory.unpack(query.data)
+
+    data = EventCbFactory.unpack(query.data)
+    button = ButtonCbFactory.unpack(data.button)
     msg = ""
-    if data.is_yes:
+    if button.button == ButtonInfo.YES:
         msg = "Добавление баллов!"
         # TODO: добавление баллов в SQL
     else:
         msg = "С пруфами что-то не так.. Отпиши @rekreker"
     await bot.send_message(data.user_id, msg, reply_to_message_id=data.reply_msg_id)
-    return await bot(AnswerCallbackQuery(callback_query_id=query.id))
+    return await bot.answer_callback_query(callback_query_id=query.id)
 
 
-async def add_event(msg: types.Message, db: Database) -> Any:
+async def add_event(msg: types.Message) -> Any:
     text = msg.text[10:]
     data = text.split("|")
     if len(data) != 2 or data[0].strip() == "" or data[1].strip() == "":
@@ -29,7 +31,7 @@ async def add_event(msg: types.Message, db: Database) -> Any:
 
     name = data[0].strip()
     desc = data[1].strip()
-    db.new_event()
+    # TODO: добавить создание мероприятия в SQL
     await msg.reply(f"'{name}' успешно создано")
 
 

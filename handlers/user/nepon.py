@@ -7,7 +7,7 @@ from data import config
 from data.cb_data import NeponCbFactory
 
 
-async def call(msg: types.Message, bot: Bot) -> None:
+async def gen_menu(msg: types.Message, bot: Bot) -> None:
     if msg.from_user is None:
         return
     if msg.text.strip() == "/nepon":
@@ -18,22 +18,24 @@ async def call(msg: types.Message, bot: Bot) -> None:
     await msg.reply("Отправлено спикеру!")
 
     m = [
-        f"От <a href='tg://user?id={msg.from_user.id}'>{html.quote(msg.from_user.full_name)}</a> пришёл непон:",
+        f"От <a href='tg://user?id={msg.from_user.id}'>{html.quote(msg.from_user.full_name)}</a> пришёл nepon:",
         msg.text[6:].strip()
     ]
 
-    # TODO: добавить 1-ти дневный таймаут на отображение этой кнопки для админа
-    data = NeponCbFactory(user_id=msg.from_user.id, reply_msg_id=msg.message_id)
-    builder = InlineKeyboardBuilder()
-    builder.add(
+    # TODO: добавить 1-ти дневный таймаут по user_id на отображение этой кнопки админу
+    kb = InlineKeyboardBuilder()
+    kb.add(
         types.InlineKeyboardButton(
             text="✅",
-            callback_data=data.pack()
-        ))
-    markup = builder.as_markup()
+            callback_data=NeponCbFactory(
+                user_id=msg.from_user.id,
+                reply_msg_id=msg.message_id
+            ).pack()
+        )
+    )
 
     for i in config.ADMINS:
-        await bot.send_message(i, "\n".join(m), reply_markup=markup)
+        await bot.send_message(i, "\n".join(m), reply_markup=kb.as_markup())
 
     for i in config.TO_NOTIF:
         await bot.send_message(i, "\n".join(m), reply_markup=None)

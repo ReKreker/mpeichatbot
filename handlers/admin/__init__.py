@@ -1,5 +1,5 @@
 from aiogram import Router
-from aiogram.filters import Command
+from aiogram.filters import Command, and_f
 
 import states
 from data import cb_data
@@ -9,8 +9,10 @@ from . import nepon, quiz, practice, event
 
 def prepare_router() -> Router:
     router = Router()
-    router.message.filter(ChatTypeFilter("private"))
-    router.message.filter(AdminFilter())
+    router.message.filter(and_f(
+        ChatTypeFilter("private"),
+        AdminFilter()
+    ))
 
     # Receive nepon
     nepon_route = Router()
@@ -26,8 +28,10 @@ def prepare_router() -> Router:
 
     # Receive practice
     pract_route = Router()
-    pract_route.callback_query.filter(cb_data.PractChooseCbFactory.filter())
-    pract_route.callback_query.filter(states.user.Practice.forwarded)
+    pract_route.callback_query.filter(and_f(
+        cb_data.PractCbFactory.filter(),
+        states.user.Activity.forwarded
+    ))
     pract_route.callback_query.register(practice.approve)
     router.include_router(pract_route)
     # Add practice
@@ -41,8 +45,10 @@ def prepare_router() -> Router:
 
     # Receive event
     event_route = Router()
-    event_route.callback_query.filter(cb_data.EventChooseCbFactory.filter())
-    event_route.callback_query.filter(states.user.Event.forwarded)
+    event_route.callback_query.filter(and_f(
+        cb_data.EventCbFactory.filter(),
+        states.user.Activity.forwarded
+    ))
     event_route.callback_query.register(event.approve)
     router.include_router(event_route)
     # Add event
