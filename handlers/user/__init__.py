@@ -1,7 +1,7 @@
 from aiogram import Router
 from aiogram.filters import CommandStart, Command, and_f, StateFilter
 
-from filters import ChatTypeFilter
+from filters import ChatTypeFilter, ContentFilter
 from states.user import Activity
 from . import start, event, nepon, quiz, practice
 
@@ -39,6 +39,7 @@ def prepare_router() -> Router:
     pract_proof_route = Router()
     pract_proof_route.message.filter(and_f(
         StateFilter(Activity.getting_proofs),
+        ContentFilter()
     ))
     pract_proof_route.message.register(practice.proof_handler)
     router.include_router(pract_proof_route)
@@ -47,6 +48,7 @@ def prepare_router() -> Router:
     practice_nproof_route = Router()
     practice_nproof_route.message.filter(and_f(
         StateFilter(Activity.next_proof),
+        ContentFilter()
     ))
     practice_nproof_route.message.register(practice.next_proof_handler)
     router.include_router(practice_nproof_route)
@@ -69,6 +71,7 @@ def prepare_router() -> Router:
     event_proof_route = Router()
     event_proof_route.message.filter(and_f(
         StateFilter(Activity.getting_proofs),
+        ContentFilter()
     ))
     event_proof_route.message.register(event.proof_handler)
     router.include_router(event_proof_route)
@@ -77,6 +80,7 @@ def prepare_router() -> Router:
     event_nproof_route = Router()
     event_nproof_route.message.filter(and_f(
         StateFilter(Activity.next_proof),
+        ContentFilter()
     ))
     event_nproof_route.message.register(event.next_proof_handler)
     router.include_router(event_nproof_route)
