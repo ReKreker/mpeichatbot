@@ -6,7 +6,10 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from data import config
 from data.cb_data import EventCbFactory, ButtonInfo, ButtonCbFactory
+from data.database import Database
 from states.user import Activity
+
+db = Database()
 
 
 async def gen_menu(msg: types.Message, state: FSMContext) -> None:
@@ -14,16 +17,18 @@ async def gen_menu(msg: types.Message, state: FSMContext) -> None:
         return
     await state.clear()
 
-    # TODO: извлечь из SQL всех мероприятий и их id(желательно от недавних до поздних)
-    test_data = {1: "Мероприятие 1", 2: "Мероприятие 2", 3: "Мероприятие 3"}
+    await db.connect()
+    events_data = await db.get_events()
+    await db.disconnect()
+
     button = types.InlineKeyboardButton
     kb = InlineKeyboardBuilder()
-    for identif, name in test_data.items():
+    for identif, name in events_data:
         data_button = ButtonCbFactory(id=identif)
         kb.add(button(text=name, callback_data=data_button.pack()))
     kb.adjust(1)
 
-    AMOUNT_OF_EVENTS = 3  # TODO: извлекать из SQL кол-во событий, реализовать эту функциональность позже
+    AMOUNT_OF_EVENTS = len(events_data)  # TODO: извлекать из SQL кол-во событий, реализовать эту функциональность позже
     if AMOUNT_OF_EVENTS > 5:
         next_button = ButtonCbFactory(button=ButtonInfo.NEXT)
         kb.add(button(text=">", callback_data=next_button.pack()))

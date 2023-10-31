@@ -8,16 +8,16 @@ from data import config
 
 
 class Database:
-    def __init__(self, dispatcher: Dispatcher):
-        self.dp = dispatcher
+    def __init__(self):
+        # self.dp = dispatcher
         self.db_name = config.PG_DATABASE
         self.user = config.PG_USER
         self.password = config.PG_PASSWORD
         self.host = config.PG_HOST
         self.port = config.PG_PORT
         self.pool = None
-        self.logger: structlog.typing.FilteringBoundLogger = self.dp["business_logger"]
-        self.logger.debug("Connecting to PostgreSQL", db=self.db_name)
+        # self.logger: structlog.typing.FilteringBoundLogger = self.dp["business_logger"]
+        # self.logger.debug("Connecting to PostgreSQL", db=self.db_name)
 
     async def connect(self):
         try:
@@ -28,25 +28,26 @@ class Database:
                 host=self.host,
                 port=self.port
             )
-            self.dp["db_pool"] = self.pool
-            self.dp["temp_bot_cloud_session"] = utils.smart_session.SmartAiogramAiohttpSession(
-                json_loads=orjson.loads,
-                logger=self.dp["aiogram_session_logger"],
-            )
+            # self.dp["db_pool"] = self.pool
+            # self.dp["temp_bot_cloud_session"] = utils.smart_session.SmartAiogramAiohttpSession(
+            #     json_loads=orjson.loads,
+            #     logger=self.dp["aiogram_session_logger"],
+            # )
 
-            self.logger.debug("Succesfully connected to PostgreSQL", db=self.db_name)
-        except asyncpg.exceptions.PostgresError as e:
-            self.logger.error(f"Error connecting to the database: {e}", db=self.db_name)
+            # self.logger.debug("Successfully connected to PostgresSQL", db=self.db_name)
+        except asyncpg.exceptions.PostgresError:
+            pass
+            # self.logger.error(f"Error connecting to the database: {e}", db=self.db_name)
 
     async def disconnect(self):
         if self.pool:
             await self.pool.close()
-            self.logger.debug("Disconnected from the database", db=self.db_name)
+            # self.logger.debug("Disconnected from the database", db=self.db_name)
 
     async def execute_query(self, query, *args):
         """
-        :param query: SQL request with %s
-        :param args: args to insert in %s
+        :param query: SQL request with $1, $2
+        :param args: args to insert in $1, $2
         """
         if self.pool:
             try:
@@ -54,10 +55,11 @@ class Database:
                     result = await conn.fetch(query, *args)
                 return result
             except asyncpg.exceptions.PostgresError as e:
-                self.logger.error(f"Error executing query: {e}", db=self.db_name)
+                print(e)
+                # self.logger.error(f"Error executing query: {e}", db=self.db_name)
                 return None
         else:
-            self.logger.error(f"Not connected to the database", db=self.db_name)
+            # self.logger.error(f"Not connected to the database", db=self.db_name)
             return None
 
     async def create_table(self, table_name, columns):
@@ -71,7 +73,8 @@ class Database:
                     f"({', '.join([f'{col_name} {col_type}' for col_name, col_type in columns])});"
             await self.execute_query(query)
         else:
-            self.logger.error(f"Not connected to the database", db=self.db_name)
+            pass
+            # self.logger.error(f"Not connected to the database", db=self.db_name)
 
     async def insert_data(self, table_name, data):
         """
@@ -83,33 +86,34 @@ class Database:
             columns = data.keys()
             values = [data[col] for col in columns]
             query = f"INSERT INTO {table_name} ({', '.join(columns)}) " \
-                    f"VALUES ({', '.join(['%s' for _ in range(len(values))])});"
+                    f"VALUES ({', '.join([f'${i + 1}' for i in range(len(values))])});"
             await self.execute_query(query, *values)
         else:
-            self.logger.error(f"Not connected to the database", db=self.db_name)
+            pass
+            # self.logger.error(f"Not connected to the database", db=self.db_name)
 
-    async def fetch_all_data(self, table_name):
-        """
-        Get all data from table
-        :param table_name: Name of the table (expectly)
-        """
-        if self.pool:
-            query = f"SELECT * FROM {table_name};"
-            return await self.execute_query(query)
-        else:
-            self.logger.error(f"Not connected to the database", db=self.db_name)
-            return None
+    async def get_user(self, user_id):
+        return self.execute_query("SELECT * FROM member WHERE user_id=$1", (user_id,))
 
-    def get_user(self, user_id):
-        return self.execute_query("SELECT * FROM members WHERE user_id=%s", (user_id,))
+    async def new_user(self, user_id, username):
+        await self.insert_data("member", {"user_id": user_id, "username": username, "karmas": 0, "vacancies": 0})
 
-    def new_user(self, user_id, username):
-        self.insert_data("members", {"user_id": user_id, "username": username, "karmas": 0, "vacancies": 0})
-
-    def add_karmas(self, user_id, username, karmas):
+    async def add_karmas(self, user_id, username, karmas):
         if not self.get_user(user_id):
-            self.new_user(user_id, username)
-        self.execute_query("UPDATE members SET karmas=karmas+%s WHERE user_id=%s", (karmas, user_id))
+            await self.new_user(user_id, username)
+        await self.execute_query("UPDATE member SET karmas=karmas+%s WHERE user_id=%s", (karmas, user_id))
 
-    def new_event(self, event_name, event_description):
-        self.insert_data("events", {"event_name": event_name, "description": event_description})
+    async def new_event(self, event_name, event_description):
+        await self.insert_data("event", {"event_name": event_name, "description": event_description})
+
+    async def del_event_by_name(self, event_name):
+        await self.execute_query("DELETE FROM event WHERE event_name=%s", (event_name,))
+
+    async def new_user_event(self, user_id, event_id):
+        await self.insert_data("user_event", {"user_id": user_id, "id": event_id})
+
+    async def get_events(self):
+        return await self.execute_query("SELECT event_id, event_name FROM event ORDER BY event_id DESC")
+
+    async def get_event_by_id(self, event_id):
+        return await self.execute_query("SELECT event_name, description FROM event WHERE event_id=$1", (event_id,))

@@ -14,21 +14,21 @@ from data.database import Database
 from middlewares import StructLoggingMiddleware
 
 
-async def create_db_connections(dp: Dispatcher) -> None:
-    db_pool = Database(dp)
+async def create_db_connections() -> None:
+    db_pool = Database()
     await db_pool.connect()
     await db_pool.create_table("member",
-                               [["user_id", "BIGINT"], ["username", "TEXT"], ["karmas", "INTEGER"],
-                                ["vacancies", "INTEGER"]])
+                               [["user_id", "BIGINT"], ["username", "TEXT"], ["karmas", "INT"],
+                                ["vacancies", "INT"]])
 
-    await db_pool.create_table("user_event", [["id", "SERIAL"], ["user_id", "TEXT"], ["event_id", "INTEGER"]])
+    await db_pool.create_table("user_event", [["user_event_id", "SERIAL"], ["user_id", "BIGINT"], ["event_id", "INT"]])
     await db_pool.create_table("event",
-                               [["id", "SERIAL"], ["type", "INTEGER"], ["event_name", "TEXT"], ["description", "TEXT"],
-                                ["time", "TIMESTAMP"]])
+                               [["event_id", "SERIAL"], ["type", "INT"], ["event_name", "TEXT"], ["description", "TEXT"],
+                                ["time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"]])
 
-    await db_pool.create_table("user_task", [["id", "SERIAL"], ["user_id", "TEXT"], ["task_id", "INTEGER"]])
+    await db_pool.create_table("user_task", [["user_task_id", "SERIAL"], ["user_id", "TEXT"], ["task_id", "INT"]])
     await db_pool.create_table("task",
-                               [["id", "SERIAL"], ["task_name", "TEXT"], ["type", "INTEGER"], ["description", "TEXT"]])
+                               [["task_id", "SERIAL"], ["task_name", "TEXT"], ["type", "INT"], ["description", "TEXT"]])
     await db_pool.disconnect()
 
 
@@ -64,7 +64,7 @@ async def setup_aiogram(dp: Dispatcher) -> None:
     setup_logging(dp)
     logger = dp["aiogram_logger"]
     logger.debug("Configuring aiogram")
-    await create_db_connections(dp)
+    await create_db_connections()
     setup_handlers(dp)
     setup_middlewares(dp)
     logger.info("Configured aiogram")
@@ -99,7 +99,7 @@ def main() -> None:
     dp["business_logger"] = utils.logger.setup().bind(type="business")
     dp.startup.register(aiogram_on_startup_polling)
     dp.shutdown.register(aiogram_on_shutdown_polling)
-    db = Database(dp)
+    db = Database()
     dp["db"] = db
 
     asyncio.run(dp.start_polling(bot))

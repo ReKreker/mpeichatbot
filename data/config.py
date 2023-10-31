@@ -1,16 +1,5 @@
 from environs import Env
 
-import os
-
-os.environ['ADMINS'] = "848438079"
-os.environ['TO_NOTIF'] = "848438079"
-os.environ['BOT_TOKEN'] = "6036111995:AAFnqTm4Llx3xrMaL5NlDwwP-P_izRqzFpM"
-os.environ['PG_HOST'] = "localhost"
-os.environ['PG_PORT'] = "5432"
-os.environ['PG_USER'] = "postgres"
-os.environ['PG_HOST'] = "localhost"
-os.environ['PG_PASSWORD'] = "postgres"
-os.environ['PG_DATABASE'] = "mpeichatbot"
 
 env = Env()
 env.read_env()

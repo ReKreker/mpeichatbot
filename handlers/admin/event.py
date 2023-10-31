@@ -4,6 +4,9 @@ from aiogram import types, Bot
 from aiogram.fsm.context import FSMContext
 
 from data.cb_data import EventCbFactory, ButtonCbFactory, ButtonInfo
+from data.database import Database
+
+db = Database()
 
 
 async def approve(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> Any:
@@ -15,7 +18,11 @@ async def approve(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> An
     msg = ""
     if button.button == ButtonInfo.YES:
         msg = "Добавление баллов!"
-        # TODO: добавление баллов в SQL
+
+        await db.connect()
+        await db.new_user_event(query.from_user.id, button.id)
+        await db.disconnect()
+
     else:
         msg = "С пруфами что-то не так.. Отпиши @rekreker"
     await bot.send_message(data.user_id, msg, reply_to_message_id=data.reply_msg_id)
@@ -31,7 +38,11 @@ async def add_event(msg: types.Message) -> Any:
 
     name = data[0].strip()
     desc = data[1].strip()
-    # TODO: добавить создание мероприятия в SQL
+
+    await db.connect()
+    await db.new_event(name, desc)
+    await db.disconnect()
+
     await msg.reply(f"'{name}' успешно создано")
 
 
@@ -42,5 +53,9 @@ async def del_event(msg: types.Message) -> Any:
         return
 
     name = text.strip()
-    # TODO: добавить удаление мероприятия в SQL
+
+    await db.connect()
+    await db.del_event_by_name(name)
+    await db.disconnect()
+
     await msg.reply(f"'{name}' успешно удалено")
