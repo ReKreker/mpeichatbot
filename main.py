@@ -10,33 +10,26 @@ from aiogram.client.session.aiohttp import AiohttpSession
 import handlers
 import utils
 from data import config
+from data.database import Database
 from middlewares import StructLoggingMiddleware
 
 
 async def create_db_connections(dp: Dispatcher) -> None:
-    logger: structlog.typing.FilteringBoundLogger = dp["business_logger"]
+    db_pool = Database(dp)
+    await db_pool.connect()
+    await db_pool.create_table("member",
+                               [["user_id", "BIGINT"], ["username", "TEXT"], ["karmas", "INTEGER"],
+                                ["vacancies", "INTEGER"]])
 
-    logger.debug("Connecting to PostgreSQL", db="main")
-    try:
-        db_pool = await utils.connect_to_services.wait_postgres(
-            logger=dp["db_logger"],
-            host=config.PG_HOST,
-            port=config.PG_PORT,
-            user=config.PG_USER,
-            password=config.PG_PASSWORD,
-            database=config.PG_DATABASE,
-        )
-    except tenacity.RetryError:
-        logger.error("Failed to connect to PostgreSQL", db="main")
-        exit(1)
-    else:
-        logger.debug("Succesfully connected to PostgreSQL", db="main")
-    dp["db_pool"] = db_pool
+    await db_pool.create_table("user_event", [["id", "SERIAL"], ["user_id", "TEXT"], ["event_id", "INTEGER"]])
+    await db_pool.create_table("event",
+                               [["id", "SERIAL"], ["type", "INTEGER"], ["event_name", "TEXT"], ["description", "TEXT"],
+                                ["time", "TIMESTAMP"]])
 
-    dp["temp_bot_cloud_session"] = utils.smart_session.SmartAiogramAiohttpSession(
-        json_loads=orjson.loads,
-        logger=dp["aiogram_session_logger"],
-    )
+    await db_pool.create_table("user_task", [["id", "SERIAL"], ["user_id", "TEXT"], ["task_id", "INTEGER"]])
+    await db_pool.create_table("task",
+                               [["id", "SERIAL"], ["task_name", "TEXT"], ["type", "INTEGER"], ["description", "TEXT"]])
+    await db_pool.disconnect()
 
 
 async def close_db_connections(dp: Dispatcher) -> None:
@@ -65,7 +58,6 @@ def setup_logging(dp: Dispatcher) -> None:
     dp["aiogram_logger"] = utils.logger.setup().bind(type="aiogram")
     dp["db_logger"] = utils.logger.setup().bind(type="db")
     dp["cache_logger"] = utils.logger.setup().bind(type="cache")
-    dp["business_logger"] = utils.logger.setup().bind(type="business")
 
 
 async def setup_aiogram(dp: Dispatcher) -> None:
@@ -104,9 +96,12 @@ def main() -> None:
     dp = Dispatcher()
     dp["aiogram_session_logger"] = aiogram_session_logger
     dp["bot"] = bot
-
+    dp["business_logger"] = utils.logger.setup().bind(type="business")
     dp.startup.register(aiogram_on_startup_polling)
     dp.shutdown.register(aiogram_on_shutdown_polling)
+    db = Database(dp)
+    dp["db"] = db
+
     asyncio.run(dp.start_polling(bot))
 
 

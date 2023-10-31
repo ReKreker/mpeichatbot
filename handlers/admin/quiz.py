@@ -12,7 +12,6 @@ async def approve(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> An
     await query.message.delete_reply_markup(query.inline_message_id)
 
     data = QuizCbFactory.unpack(query.data)
-    msg = ""
     if data.is_yes:
         msg = "Добавление баллов!"
         # TODO: добавление баллов в SQL

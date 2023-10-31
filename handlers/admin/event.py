@@ -4,9 +4,10 @@ from aiogram import types, Bot
 from aiogram.methods import AnswerCallbackQuery
 
 from data.cb_data import EventChooseCbFactory
+from data.database import Database
 
 
-async def approve(query: types.CallbackQuery, bot: Bot) -> Any:
+async def approve(query: types.CallbackQuery, bot: Bot, db: Database) -> Any:
     await query.message.delete_reply_markup(query.inline_message_id)
     data = EventChooseCbFactory.unpack(query.data)
     msg = ""
@@ -19,7 +20,7 @@ async def approve(query: types.CallbackQuery, bot: Bot) -> Any:
     return await bot(AnswerCallbackQuery(callback_query_id=query.id))
 
 
-async def add_event(msg: types.Message) -> Any:
+async def add_event(msg: types.Message, db: Database) -> Any:
     text = msg.text[10:]
     data = text.split("|")
     if len(data) != 2 or data[0].strip() == "" or data[1].strip() == "":
@@ -28,7 +29,7 @@ async def add_event(msg: types.Message) -> Any:
 
     name = data[0].strip()
     desc = data[1].strip()
-    # TODO: добавить создание мероприятия в SQL
+    db.new_event()
     await msg.reply(f"'{name}' успешно создано")
 
 
