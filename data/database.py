@@ -101,13 +101,13 @@ class Database:
     async def add_karmas(self, user_id, username, karmas):
         if not self.get_user(user_id):
             await self.new_user(user_id, username)
-        await self.execute_query("UPDATE member SET karmas=karmas+%s WHERE user_id=%s", (karmas, user_id))
+        await self.execute_query("UPDATE member SET karmas=karmas+$1 WHERE user_id=$2", (karmas, user_id))
 
     async def new_event(self, event_name, event_description):
         await self.insert_data("event", {"event_name": event_name, "description": event_description})
 
     async def del_event_by_name(self, event_name):
-        await self.execute_query("DELETE FROM event WHERE event_name=%s", (event_name,))
+        await self.execute_query("DELETE FROM event WHERE event_name=$1", (event_name,))
 
     async def new_user_event(self, user_id, event_id):
         await self.insert_data("user_event", {"user_id": user_id, "id": event_id})
