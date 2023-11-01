@@ -29,8 +29,8 @@ def prepare_router() -> Router:
     # Receive practice
     pract_route = Router()
     pract_route.callback_query.filter(and_f(
-        cb_data.PractCbFactory.filter(),
-        states.user.Activity.forwarded
+        PractCbFactory.filter(),
+        states.user.Practice.forwarded
     ))
     pract_route.callback_query.register(practice.approve)
     router.include_router(pract_route)
@@ -46,8 +46,8 @@ def prepare_router() -> Router:
     # Receive event
     event_route = Router()
     event_route.callback_query.filter(and_f(
-        cb_data.EventCbFactory.filter(),
-        states.user.Activity.forwarded
+        EventCbFactory.filter(),
+        states.user.Event.forwarded
     ))
     event_route.callback_query.register(event.approve)
     router.include_router(event_route)

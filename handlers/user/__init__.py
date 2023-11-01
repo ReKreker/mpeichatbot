@@ -2,7 +2,8 @@ from aiogram import Router
 from aiogram.filters import CommandStart, Command, and_f, StateFilter
 
 from filters import ChatTypeFilter, ContentFilter
-from states.user import Activity
+from states.user import Practice, Event
+from utils import media
 from . import start, event, nepon, quiz, practice
 
 
@@ -32,30 +33,30 @@ def prepare_router() -> Router:
     router.include_router(pract_route)
     # Require practice's proofs
     pract_req_route = Router()
-    pract_req_route.callback_query.filter(Activity.generated)
+    pract_req_route.callback_query.filter(Practice.generated)
     pract_req_route.callback_query.register(practice.require_proofs)
     router.include_router(pract_req_route)
     # Get practice's proofs
     pract_proof_route = Router()
     pract_proof_route.message.filter(and_f(
-        StateFilter(Activity.getting_proofs),
+        StateFilter(Practice.getting_proofs),
         ContentFilter()
     ))
-    pract_proof_route.message.register(practice.proof_handler)
+    pract_proof_route.message.register(media.proof_handler)
     router.include_router(pract_proof_route)
     # Get next proof
     # TODO: сделать нормальное окончание для сообщений
     practice_nproof_route = Router()
     practice_nproof_route.message.filter(and_f(
-        StateFilter(Activity.next_proof),
+        StateFilter(Practice.next_proof),
         ContentFilter()
     ))
-    practice_nproof_route.message.register(practice.next_proof_handler)
+    practice_nproof_route.message.register(media.next_proof_handler)
     router.include_router(practice_nproof_route)
     # Forward proofs
     practice_forward_route = Router()
-    practice_forward_route.message.filter(StateFilter(Activity.next_proof))
-    practice_forward_route.message.register(practice.forward)
+    practice_forward_route.message.filter(StateFilter(Practice.next_proof))
+    practice_forward_route.message.register(media.forward)
     router.include_router(practice_forward_route)
 
     # Event
@@ -64,30 +65,30 @@ def prepare_router() -> Router:
     router.include_router(event_route)
     # Require event's proofs
     event_req_route = Router()
-    event_req_route.callback_query.filter(Activity.generated)
+    event_req_route.callback_query.filter(Event.generated)
     event_req_route.callback_query.register(event.require_proofs)
     router.include_router(event_req_route)
     # Get event's proofs
     event_proof_route = Router()
     event_proof_route.message.filter(and_f(
-        StateFilter(Activity.getting_proofs),
+        StateFilter(Event.getting_proofs),
         ContentFilter()
     ))
-    event_proof_route.message.register(event.proof_handler)
+    event_proof_route.message.register(media.proof_handler)
     router.include_router(event_proof_route)
     # Get next proof
     # TODO: сделать нормальное окончание для сообщений
     event_nproof_route = Router()
     event_nproof_route.message.filter(and_f(
-        StateFilter(Activity.next_proof),
+        StateFilter(Event.next_proof),
         ContentFilter()
     ))
-    event_nproof_route.message.register(event.next_proof_handler)
+    event_nproof_route.message.register(media.next_proof_handler)
     router.include_router(event_nproof_route)
     # Forward proofs
     event_forward_route = Router()
-    event_forward_route.message.filter(StateFilter(Activity.next_proof))
-    event_forward_route.message.register(event.forward)
+    event_forward_route.message.filter(StateFilter(Event.next_proof))
+    event_forward_route.message.register(media.forward)
     router.include_router(event_forward_route)
 
     return router
