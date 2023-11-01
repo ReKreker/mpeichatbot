@@ -18,6 +18,7 @@ class ButtonInfo(IntEnum):
     YES = 2
     NEXT = 3
     PREV = 4
+    REPLY = 5
 
 
 class ButtonCbFactory(CallbackData, sep=";", prefix="kb_button"):
