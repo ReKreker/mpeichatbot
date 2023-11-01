@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.filters import Command, and_f
 
 import states
-from data import cb_data
+from data.cb_data import *
 from filters import ChatTypeFilter, AdminFilter
 from . import nepon, quiz, practice, event
 
@@ -16,13 +16,13 @@ def prepare_router() -> Router:
 
     # Receive nepon
     nepon_route = Router()
-    nepon_route.callback_query.filter(cb_data.NeponCbFactory.filter())
+    nepon_route.callback_query.filter(NeponCbFactory.filter())
     nepon_route.callback_query.register(nepon.approve)
     router.include_router(nepon_route)
 
     # Receive quiz
     quiz_route = Router()
-    quiz_route.callback_query.filter(cb_data.QuizCbFactory.filter())
+    quiz_route.callback_query.filter(QuizCbFactory.filter())
     quiz_route.callback_query.register(quiz.approve)
     router.include_router(quiz_route)
 
