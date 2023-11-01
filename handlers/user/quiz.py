@@ -3,7 +3,7 @@ from aiogram import html, types
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from data import config
-from data.cb_data import QuizCbFactory, ButtonCbFactory, ButtonInfo
+from data.cb_data import QuizCbFactory, ButtonInfo
 
 
 async def gen_menu(msg: types.Message, bot: Bot) -> None:
@@ -12,7 +12,7 @@ async def gen_menu(msg: types.Message, bot: Bot) -> None:
 
     await msg.reply("Отправлено на проверку")
 
-    m = f"<a href='tg://user?id={msg.from_user.id}'>{html.quote(msg.from_user.full_name)}</a> победитель квиза?"
+    m = f"<a href='{msg.from_user.url}'>{html.quote(msg.from_user.full_name)}</a> победитель квиза?"
 
     kb = InlineKeyboardBuilder()
     no_button = QuizCbFactory(

@@ -18,7 +18,7 @@ async def gen_menu(msg: types.Message, bot: Bot) -> None:
     await msg.reply("Отправлено спикеру!")
 
     m = [
-        f"От <a href='tg://user?id={msg.from_user.id}'>{html.quote(msg.from_user.full_name)}</a> пришёл nepon:",
+        f"От <a href='{msg.from_user.url}'>{html.quote(msg.from_user.full_name)}</a> пришёл nepon:",
         msg.text[6:].strip()
     ]
 
