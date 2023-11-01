@@ -15,12 +15,21 @@ async def gen_menu(msg: types.Message, state: FSMContext) -> None:
         return
     await state.clear()
 
-    # TODO: извлекать из SQL названия всех практик(желательно от недавних до поздних)
-    test_data = {1: "Практика 1", 2: "Практика 2", 3: "Практика 3"}
+    await db.connect()
+    info = await get_undone_x(db, msg.from_user.id)
+    await db.disconnect()
+
+    data = info["data"]
+    if len(data) == 0:
+        await msg.answer(info["msg"])
+        await state.clear()
+        return
+
+    # TODO: печатать описание эвента
     button = types.InlineKeyboardButton
     kb = InlineKeyboardBuilder()
-    for identif, name in test_data.items():
-        data_button = ButtonCbFactory(id=identif)
+    for x_id, name in data:
+        data_button = ButtonCbFactory(id=x_id)
         kb.add(button(text=name, callback_data=data_button.pack()))
     kb.adjust(1)
 

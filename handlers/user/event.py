@@ -7,7 +7,7 @@ from data.database import Database
 from states.user import Event
 from utils.db_processing import get_undone_x
 
-db = Database()
+db = Database("event")
 
 
 async def gen_menu(msg: types.Message, state: FSMContext) -> None:
@@ -16,13 +16,20 @@ async def gen_menu(msg: types.Message, state: FSMContext) -> None:
     await state.clear()
 
     await db.connect()
-    events_data = await db.get_events()
+    info = await get_undone_x(db, msg.from_user.id)
     await db.disconnect()
 
+    data = info["data"]
+    if len(data) == 0:
+        await msg.answer(info["msg"])
+        await state.clear()
+        return
+
+    # TODO: печатать описание эвента
     button = types.InlineKeyboardButton
     kb = InlineKeyboardBuilder()
-    for identif, name in events_data:
-        data_button = ButtonCbFactory(id=identif)
+    for x_id, name in data:
+        data_button = ButtonCbFactory(id=x_id)
         kb.add(button(text=name, callback_data=data_button.pack()))
     kb.adjust(1)
 
