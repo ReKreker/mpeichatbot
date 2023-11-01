@@ -2,8 +2,6 @@ import asyncio
 
 import asyncpg as asyncpg
 import orjson
-import structlog
-import tenacity
 from aiogram import Bot, Dispatcher
 from aiogram.client.session.aiohttp import AiohttpSession
 
@@ -21,14 +19,25 @@ async def create_db_connections() -> None:
                                [["user_id", "BIGINT"], ["username", "TEXT"], ["karmas", "INT"],
                                 ["vacancies", "INT"]])
 
-    await db_pool.create_table("user_event", [["user_event_id", "SERIAL"], ["user_id", "BIGINT"], ["event_id", "INT"]])
+    await db_pool.create_table("user_event",
+                               [["user_event_id", "SERIAL"], ["user_id", "BIGINT"], ["event_id", "INT"]])
     await db_pool.create_table("event",
-                               [["event_id", "SERIAL"], ["type", "INT"], ["event_name", "TEXT"], ["description", "TEXT"],
-                                ["time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"]])
+                               [["event_id", "SERIAL"], ["event_name", "TEXT"], ["description", "TEXT"]])
 
-    await db_pool.create_table("user_task", [["user_task_id", "SERIAL"], ["user_id", "TEXT"], ["task_id", "INT"]])
-    await db_pool.create_table("task",
-                               [["task_id", "SERIAL"], ["task_name", "TEXT"], ["type", "INT"], ["description", "TEXT"]])
+    await db_pool.create_table("user_practice",
+                               [["user_practice_id", "SERIAL"], ["user_id", "BIGINT"], ["practice_id", "INT"]])
+    await db_pool.create_table("practice",
+                               [["practice_id", "SERIAL"], ["practice_name", "TEXT"], ["description", "TEXT"]])
+
+    await db_pool.create_table("user_nepon",
+                               [["user_nepon_id", "SERIAL"], ["user_id", "BIGINT"], ["nepon_id", "INT"]])
+    await db_pool.create_table("nepon",
+                               [["nepon_id", "SERIAL"], ["time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"]])
+
+    await db_pool.create_table("user_quiz",
+                               [["user_quiz_id", "SERIAL"], ["user_id", "BIGINT"], ["quiz_id", "INT"]])
+    await db_pool.create_table("quiz",
+                               [["quiz_id", "SERIAL"], ["time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"]])
     await db_pool.disconnect()
 
 
