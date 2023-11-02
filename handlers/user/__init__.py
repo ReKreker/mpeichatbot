@@ -45,7 +45,6 @@ def prepare_router() -> Router:
     pract_proof_route.message.register(media.proof_handler)
     router.include_router(pract_proof_route)
     # Get next proof
-    # TODO: сделать нормальное окончание для сообщений
     practice_nproof_route = Router()
     practice_nproof_route.message.filter(and_f(
         StateFilter(Practice.next_proof),
@@ -77,7 +76,6 @@ def prepare_router() -> Router:
     event_proof_route.message.register(media.proof_handler)
     router.include_router(event_proof_route)
     # Get next proof
-    # TODO: сделать нормальное окончание для сообщений
     event_nproof_route = Router()
     event_nproof_route.message.filter(and_f(
         StateFilter(Event.next_proof),

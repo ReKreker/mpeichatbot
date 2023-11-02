@@ -25,7 +25,6 @@ async def gen_menu(msg: types.Message, state: FSMContext) -> None:
         await state.clear()
         return
 
-    # TODO: печатать описание эвента
     button = types.InlineKeyboardButton
     kb = InlineKeyboardBuilder()
     for x_id, name in data:
@@ -39,12 +38,21 @@ async def gen_menu(msg: types.Message, state: FSMContext) -> None:
 
 async def require_proofs(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> bool:
     await query.message.delete()
-    await query.message.answer(
-        "Вышли док-ва в виде картинок, видео или файла (предпочительно docx/pdf, но можно и zip).\n" + \
-        "<b>Отправь любое сообщение, чтобы завершить передачу</b>"
-    )
-
     data = ButtonCbFactory.unpack(query.data)
+
+    await db.connect()
+    row = await db.get_x_by_id(data.id)
+    await db.disconnect()
+    name, descr = row[0].values()
+    m = [
+        f"<b>{name}</b>",
+        f"<i>{descr}</i>",
+        "",
+        "Вышли док-ва в виде картинок, видео или файла (предпочительно docx/pdf, но можно и zip)",
+        "<b>Отправь любое сообщение, чтобы завершить передачу</b>"
+    ]
+    await query.message.answer("\n".join(m))
+
     await state.set_data({"id": data.id, "db": db, "group": Event, "cb_factory": EventCbFactory})
     await state.set_state(Event.getting_proofs)
     return await bot.answer_callback_query(callback_query_id=query.id)
