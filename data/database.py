@@ -229,11 +229,6 @@ class Database:
     async def new_user(self, user_id, username) -> None:
         await self.insert_data("member", {"user_id": user_id, "username": username, "karmas": 0, "vacancies": 0})
 
-    async def add_karmas(self, user_id, username, karmas) -> None:
-        if not self.get_user(user_id):
-            await self.new_user(user_id, username)
-        await self.execute_query("UPDATE member SET karmas=karmas+$1 WHERE user_id=$2", (karmas, user_id))
-
     async def new_x(self, name: str, descr: str) -> None:
         args = self.strat.new_x_args(name, descr)
         await self.insert_data(*args)
