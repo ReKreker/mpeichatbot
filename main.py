@@ -29,15 +29,13 @@ async def create_db_connections() -> None:
     await db_pool.create_table("practice",
                                [["practice_id", "SERIAL"], ["practice_name", "TEXT"], ["description", "TEXT"]])
 
-    await db_pool.create_table("user_nepon",
-                               [["user_nepon_id", "SERIAL"], ["user_id", "BIGINT"], ["nepon_id", "INT"]])
     await db_pool.create_table("nepon",
-                               [["nepon_id", "SERIAL"], ["time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"]])
+                               [["nepon_id", "SERIAL"], ["user_id", "BIGINT"],
+                                ["time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"]])
 
-    await db_pool.create_table("user_quiz",
-                               [["user_quiz_id", "SERIAL"], ["user_id", "BIGINT"], ["quiz_id", "INT"]])
     await db_pool.create_table("quiz",
-                               [["quiz_id", "SERIAL"], ["time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"]])
+                               [["quiz_id", "SERIAL"], ["user_id", "BIGINT"],
+                                ["time", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"]])
     await db_pool.disconnect()
 
 
