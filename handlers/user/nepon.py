@@ -4,7 +4,11 @@ from aiogram.types import FSInputFile
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from data import config
-from data.cb_data import NeponCbFactory
+from data.cb_data import NeponCbFactory, ButtonInfo
+from data.database import Database
+from utils.keyboards import BuildKb
+
+db = Database()
 
 
 async def gen_menu(msg: types.Message, bot: Bot) -> None:
@@ -22,20 +26,22 @@ async def gen_menu(msg: types.Message, bot: Bot) -> None:
         msg.text[6:].strip()
     ]
 
-    # TODO: добавить 1-ти дневный таймаут по user_id на отображение этой кнопки админу
-    kb = InlineKeyboardBuilder()
-    kb.add(
-        types.InlineKeyboardButton(
-            text="✅",
-            callback_data=NeponCbFactory(
-                user_id=msg.from_user.id,
-                reply_msg_id=msg.message_id
-            ).pack()
-        )
-    )
+    # таймаут на 24 часа на отображение кнопки одобрения для запросов от конкретного юзера
+    await db.connect()
+    recent = await db.execute_query("SELECT * FROM nepon WHERE time >= CURRENT_TIMESTAMP - INTERVAL '24 hours'")
+    await db.disconnect()
+
+    if len(recent) == 0:
+        kb = InlineKeyboardBuilder()
+        build_kb = BuildKb(NeponCbFactory, msg)
+        yes = build_kb.get_button("✅", ButtonInfo.NONE, -1)
+        kb.add(yes)
+        markup = kb.as_markup()
+    else:
+        markup = None
 
     for i in config.ADMINS:
-        await bot.send_message(i, "\n".join(m), reply_markup=kb.as_markup())
+        await bot.send_message(i, "\n".join(m), reply_markup=markup)
 
     for i in config.TO_NOTIF:
         await bot.send_message(i, "\n".join(m), reply_markup=None)

@@ -4,6 +4,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from data import config
 from data.cb_data import QuizCbFactory, ButtonInfo
+from utils.keyboards import BuildKb
 
 
 async def gen_menu(msg: types.Message, bot: Bot) -> None:
@@ -15,31 +16,11 @@ async def gen_menu(msg: types.Message, bot: Bot) -> None:
     m = f"<a href='{msg.from_user.url}'>{html.quote(msg.from_user.full_name)}</a> победитель квиза?"
 
     kb = InlineKeyboardBuilder()
-    no_button = QuizCbFactory(
-        user_id=msg.from_user.id,
-        reply_msg_id=msg.message_id,
-        button=ButtonCbFactory(
-            button=ButtonInfo.NO
-        ).pack()
-    ).pack()
-    kb.add(
-        types.InlineKeyboardButton(
-            text="🚫",
-            callback_data=no_button
-        ))
-
-    yes_button = QuizCbFactory(
-        user_id=msg.from_user.id,
-        reply_msg_id=msg.message_id,
-        button=ButtonCbFactory(
-            button=ButtonInfo.YES
-        ).pack()
-    ).pack()
-    kb.add(
-        types.InlineKeyboardButton(
-            text="✅",
-            callback_data=yes_button
-        ))
+    build_kb = BuildKb(QuizCbFactory, msg)
+    no = build_kb.get_button("🚫", ButtonInfo.NO, -1)
+    yes = build_kb.get_button("✅", ButtonInfo.YES, -1)
+    kb.add(no)
+    kb.add(yes)
     kb.adjust(2)
 
     for i in config.ADMINS:

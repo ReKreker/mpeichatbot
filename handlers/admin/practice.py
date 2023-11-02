@@ -11,7 +11,7 @@ from utils.db_processing import mark_as_done, fully_del_x
 db = Database("practice")
 
 
-async def approve(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> Any:
+async def approve(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> bool:
     await state.clear()
     await query.message.delete_reply_markup(query.inline_message_id)
 

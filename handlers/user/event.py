@@ -37,7 +37,7 @@ async def gen_menu(msg: types.Message, state: FSMContext) -> None:
     await state.set_state(Event.generated)
 
 
-async def require_proofs(query: types.CallbackQuery, state: FSMContext, bot: Bot):
+async def require_proofs(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> bool:
     await query.message.delete()
     await query.message.answer(
         "Вышли док-ва в виде картинок, видео или файла (предпочительно docx/pdf, но можно и zip).\n" + \
