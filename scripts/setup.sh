@@ -16,5 +16,5 @@ chown postgres:postgres /run/postgresql -R
 mkdir -p /var/lib/postgres/data/
 chown postgres:postgres /var/lib/postgres/data -R
 source ./.env
-su - postgres -c "echo ${POSTGRES_PASSWORD} > supapass; initdb -D /var/lib/postgres/data/ -U ${POSTGRES_USER} --pwfile=./supapass"
+su - postgres -c "echo ${POSTGRES_PASSWORD} > /var/lib/postgres/supapass; initdb -D /var/lib/postgres/data/ -U ${POSTGRES_USER} --pwfile=/var/lib/postgres/supapass"
 su - postgres -c "createdb -h localhost -p 5432 -U ${POSTGRES_USER} ${POSTGRES_DATABASE}"
