@@ -15,6 +15,11 @@ from middlewares import StructLoggingMiddleware
 async def create_db_connections() -> None:
     db_pool = Database()
     await db_pool.connect()
+
+    await db_pool.execute_query(f"SELECT 'CREATE DATABASE {config.POSTGRES_DATABASE}' "
+                                f"WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '{config.POSTGRES_DATABASE}')")
+    await db_pool.execute_query(f"GRANT ALL ON DATABASE {config.POSTGRES_DATABASE} TO {config.POSTGRES_USER}")
+
     await db_pool.create_table("member",
                                [["user_id", "BIGINT"], ["username", "TEXT"], ["karmas", "INT"],
                                 ["vacancies", "INT"]])
