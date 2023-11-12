@@ -22,7 +22,7 @@ async def call(msg: types.Message, bot: Bot) -> Any:
         return
 
     await db.connect()
-    user_id = msg.from_user.id
+    user_id = reply.from_user.id
     if not await db.get_user(user_id):
         await db.new_user(user_id, msg.from_user.full_name)
     await db.execute_query("UPDATE member SET karmas=karmas+1 WHERE user_id=$1", user_id)
