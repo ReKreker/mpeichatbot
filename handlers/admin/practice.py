@@ -31,16 +31,17 @@ async def approve(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> bo
 
 
 async def add_practice(msg: types.Message) -> Any:
-    text = msg.text[10:]
-    data = text.split("|")
-    if len(data) != 2 or data[0].strip() == "" or data[1].strip() == "":
+    cmd_len = msg.entities[0].length + 1
+    text = msg.text[cmd_len:]
+
+    name_end, desc_beg = text.find("|"), msg.html_text.find("|") + 1
+    name, desc = text[:name_end], msg.html_text[desc_beg:]
+
+    if name.strip() == "" or desc.strip() == "":
         await msg.reply("Введи <code>/add_pract Название|Описание</code>")
         return
 
     # TODO: Добавить уведомляшки
-    # TODO: Добавить возможность хранить уже отформатированное описание
-    name = data[0].strip()
-    desc = data[1].strip()
 
     await db.connect()
     await db.new_x(name, desc)
@@ -50,12 +51,13 @@ async def add_practice(msg: types.Message) -> Any:
 
 
 async def del_practice(msg: types.Message) -> Any:
-    text = msg.text[10:]
-    if text.strip() == "":
+    cmd_len = msg.entities[0].length + 1
+    text = msg.text[cmd_len:]
+    name = text.strip()
+
+    if name == "":
         await msg.reply("Введи <code>/del_pract Название</code>")
         return
-
-    name = text.strip()
 
     await db.connect()
     ret_msg = await fully_del_x(db, name)
