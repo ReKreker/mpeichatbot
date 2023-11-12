@@ -136,11 +136,11 @@ strategies = {
 class Database:
     def __init__(self, strategy: str = ""):
         # self.dp = dispatcher
-        self.db_name = config.PG_DATABASE
-        self.user = config.PG_USER
-        self.password = config.PG_PASSWORD
-        self.host = config.PG_HOST
-        self.port = config.PG_PORT
+        self.db_name = config.POSTGRES_DATABASE
+        self.user = config.POSTGRES_USER
+        self.password = config.POSTGRES_PASSWORD
+        self.host = config.POSTGRES_HOST
+        self.port = config.POSTGRES_PORT
         self.pool = None
         strat = strategies.get(strategy)
         if strat is None:
