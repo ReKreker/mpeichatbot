@@ -1,5 +1,5 @@
 # docker build --tag "mpeichatbot" .
-# docker run -v ./postgresql_db:/var/lib/postgres/data/ --rm -ti mpeichatbot
+# docker run -v postgresql_db:/var/lib/postgres/data/ --rm -ti mpeichatbot
 
 # Установка базового образа
 FROM archlinux:base-20231029.0.188123
