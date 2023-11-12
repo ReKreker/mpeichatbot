@@ -11,7 +11,8 @@ WORKDIR /mpeichatbot
 COPY . /mpeichatbot
 
 # Первичная настройка
-RUN ./scripts/setup.sh
+RUN --mount=type=bind,source=db_vol,target=/var/lib/postgres/data \
+    ./scripts/setup.sh
 
 # Запуск команд при старте контейнера
 CMD ./scripts/start.sh
