@@ -22,7 +22,7 @@ async def approve(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> bo
     else:
         await db.connect()
         msg = await mark_as_done(db, query.from_user.id, button.id)
-        await db.connect()
+        await db.disconnect()
 
     await bot.send_message(data.user_id, msg, reply_to_message_id=data.reply_msg_id)
     for i in config.ADMINS:

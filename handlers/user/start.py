@@ -29,8 +29,8 @@ async def help_msg(msg: types.Message):
         return
     m = [
         '/nepon {термин} - попросить спикера объяснить использованный термин',
-        '/quizwinner - накинуть баллов за выигрыш в квизе'
-        '/practice - сдать практику'
-        '/event - сдать мероприятие'
+        '/quizwinner - накинуть баллов за выигрыш в квизе',
+        '/practice - сдать практику',
+        '/event - сдать мероприятие',
     ]
     await msg.answer("\n".join(m))
