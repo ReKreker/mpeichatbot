@@ -48,7 +48,6 @@ async def forward(msg: types.Message, state: FSMContext, bot: Bot) -> None:
     x_id = data["id"]
     db = data["db"]
     cb_factory = data["cb_factory"]
-    state_group = data["group"]
 
     await db.connect()
     info = await db.get_x_by_id(x_id)
@@ -78,4 +77,4 @@ async def forward(msg: types.Message, state: FSMContext, bot: Bot) -> None:
         await bot.send_media_group(i, data["proofs"])
         await bot.send_message(i, "\n".join(m), reply_markup=None)
 
-    await state.set_state(state_group.forwarded)
+    await state.clear()

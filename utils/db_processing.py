@@ -12,7 +12,7 @@ async def get_undone_x(database: Database, user_id: int) -> dict[str, str | list
     all_ids = [i.get("id") for i in all_x]
 
     done = await database.get_all_user_x_by_user_id(user_id)
-    if done is None:
+    if not done:
         return {"msg": "", "data": all_x}
 
     undone = ()
@@ -36,7 +36,7 @@ async def mark_as_done(database: Database, user_id: int, x_id: int):
         return "Невозможно сдать"
 
     done = await database.get_all_user_x_by_user_id(user_id)
-    if done is None:
+    if not done:
         await database.new_user_x(user_id, x_id)
         return "Добавление баллов!"
 

@@ -12,7 +12,6 @@ db = Database("practice")
 
 
 async def approve(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> bool:
-    await state.clear()
     await query.message.delete_reply_markup(query.inline_message_id)
 
     data = PractCbFactory.unpack(query.data)
@@ -21,7 +20,7 @@ async def approve(query: types.CallbackQuery, state: FSMContext, bot: Bot) -> bo
         msg = "Не принятo"
     else:
         await db.connect()
-        msg = await mark_as_done(db, query.from_user.id, button.id)
+        msg = await mark_as_done(db, data.user_id, button.id)
         await db.disconnect()
 
     await bot.send_message(data.user_id, msg, reply_to_message_id=data.reply_msg_id)
